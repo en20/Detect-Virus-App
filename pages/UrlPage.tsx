@@ -7,90 +7,66 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MotiView } from 'moti';
 import Header from '../components/Header';
 
+// Define types for scan results
+interface VendorResult {
+  name: string;
+  result: string;
+  category: 'malicious' | 'suspicious' | 'harmless' | 'undetected';
+}
+
+interface ScanResult {
+  total: number;
+  harmless: number;
+  malicious: number;
+  suspicious: number;
+  undetected: number;
+  timeout: number;
+  status: string;
+  vendorResults: VendorResult[];
+}
+
 export default function UrlPage() {
   const [url, setUrl] = useState('');
   const [scanning, setScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<any>(null);
+  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'malicious'>('all');
   const navigation = useNavigation();
 
   const handleAnalyzeUrl = async () => {
     if (!url.trim()) return;
 
+    // Show scanning state
     setScanning(true);
     setScanResult(null);
 
-    try {
-      // Primeiro, envie a URL para análise
-      const initialScanResponse = await fetch('https://www.virustotal.com/api/v3/urls', {
-        method: 'POST',
-        headers: {
-          'x-apikey': 'ed18940bf2a5627ab6488436e4b69e7d81105219f3a61ef38db67632da7c5408',
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: `url=${encodeURIComponent(url)}`
+    // Simulate API delay
+    setTimeout(() => {
+      // Mock scan result data
+      const mockVendorResults: VendorResult[] = [
+        { name: "Vendor 1", result: "clean", category: "harmless" },
+        { name: "Vendor 2", result: "malware", category: "malicious" },
+        { name: "Vendor 3", result: "suspicious file", category: "suspicious" },
+        { name: "Vendor 4", result: "undetected", category: "undetected" },
+        { name: "Vendor 5", result: "phishing", category: "malicious" },
+        { name: "Vendor 6", result: "clean", category: "harmless" },
+        { name: "Vendor 7", result: "clean", category: "harmless" }
+      ];
+
+      // Set mock result
+      setScanResult({
+        total: 7,
+        harmless: 3,
+        malicious: 2,
+        suspicious: 1,
+        undetected: 1,
+        timeout: 0,
+        status: "completed",
+        vendorResults: mockVendorResults
       });
 
-      const scanData = await initialScanResponse.json();
-      console.log('Initial Scan Response:', JSON.stringify(scanData, null, 2));
-      
-      const analysisId = scanData.data.id;
-
-      // Aumentar o tempo de espera para 15 segundos
-      await new Promise(resolve => setTimeout(resolve, 15000));
-
-      // Obtenha os resultados da análise
-      const resultResponse = await fetch(`https://www.virustotal.com/api/v3/analyses/${analysisId}`, {
-        headers: {
-          'x-apikey': 'ed18940bf2a5627ab6488436e4b69e7d81105219f3a61ef38db67632da7c5408'
-        }
-      });
-      
-      const resultData = await resultResponse.json();
-      console.log('Analysis Results:', JSON.stringify(resultData, null, 2));
-
-      // Verificar se a análise está completa
-      if (resultData.data?.attributes) {
-        const { attributes } = resultData.data;
-        
-        // Processar todos os vendors da resposta e ordenar por categoria
-        const vendorResults = Object.entries(attributes.results)
-          .map(([name, data]) => ({
-            name,
-            result: data.result as string,
-            category: data.category as string
-          }))
-          .sort((a, b) => {
-            // Ordem de prioridade: malicious > suspicious > harmless > undetected
-            const priority = {
-              'malicious': 3,    // Maior número = maior prioridade
-              'suspicious': 2,
-              'harmless': 1,
-              'undetected': 0
-            };
-            return (priority[b.category] || -1) - (priority[a.category] || -1); // Invertemos a ordem de a e b
-          });
-
-        setScanResult({
-          total: attributes.stats.total || 0,
-          harmless: attributes.stats.harmless || 0,
-          malicious: attributes.stats.malicious || 0,
-          suspicious: attributes.stats.suspicious || 0,
-          undetected: attributes.stats.undetected || 0,
-          timeout: attributes.stats.timeout || 0,
-          status: attributes.status,
-          vendorResults
-        });
-      } else {
-        throw new Error('Dados da análise incompletos');
-      }
-
-    } catch (error) {
-      console.error('Error scanning URL:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao analisar a URL. Tente novamente em alguns instantes.');
-    } finally {
+      // End scanning state
       setScanning(false);
-    }
+    }, 2000);
   };
 
   return (

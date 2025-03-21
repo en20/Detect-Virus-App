@@ -80,103 +80,29 @@ export default function FilePage() {
 
     setScanning(true);
     
-    try {
-      // Preparar o arquivo para upload
-      const formData = new FormData();
-      formData.append('file', {
-        uri: selectedFile.uri,
-        type: selectedFile.type,
-        name: selectedFile.name
-      } as any);
-
-      console.log('Iniciando upload do arquivo:', selectedFile.name);
+    // Simulate API delay and processing
+    setTimeout(() => {
+      // Mock scan result
+      const mockResult: ScanResult = {
+        status: 'completed',
+        total: 72,
+        malicious: 0,
+        suspicious: 0,
+        harmless: 68,
+        undetected: 4,
+        vendorResults: [
+          { name: "Vendor 1", result: "clean", category: "harmless" },
+          { name: "Vendor 2", result: "undetected", category: "undetected" },
+          { name: "Vendor 3", result: "safe", category: "harmless" },
+          { name: "Vendor 4", result: "clean", category: "harmless" },
+          { name: "Vendor 5", result: "undetected", category: "undetected" },
+          { name: "Vendor 6", result: "clean", category: "harmless" }
+        ]
+      };
       
-      // Enviar arquivo para análise
-      const uploadResponse = await fetch('https://www.virustotal.com/api/v3/files', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'x-apikey': 'ed18940bf2a5627ab6488436e4b69e7d81105219f3a61ef38db67632da7c5408'
-        },
-        body: formData
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error(`Falha no upload: ${uploadResponse.status}`);
-      }
-
-      const uploadData = await uploadResponse.json();
-      console.log('Upload concluído, ID:', uploadData.data.id);
-
-      // Iniciar polling para verificar o resultado
-      let analysisComplete = false;
-      let attempts = 0;
-      let analysisData = null;
-
-      while (!analysisComplete && attempts < 12) { // 12 tentativas = 2 minutos
-        await new Promise(resolve => setTimeout(resolve, 10000)); // Espera 10 segundos
-        
-        attempts++;
-        console.log(`Verificando resultados (tentativa ${attempts})...`);
-        
-        const analysisResponse = await fetch(`https://www.virustotal.com/api/v3/analyses/${uploadData.data.id}`, {
-          method: 'GET',
-          headers: {
-            'accept': 'application/json',
-            'x-apikey': 'ed18940bf2a5627ab6488436e4b69e7d81105219f3a61ef38db67632da7c5408'
-          }
-        });
-
-        if (!analysisResponse.ok) {
-          continue;
-        }
-
-        analysisData = await analysisResponse.json();
-        console.log('Status:', analysisData.data.attributes.status);
-        
-        if (analysisData.data.attributes.status === 'completed') {
-          analysisComplete = true;
-          break;
-        }
-      }
-
-      if (analysisComplete && analysisData) {
-        const { attributes } = analysisData.data;
-        
-        const vendorResults = Object.entries(attributes.results || {})
-          .map(([name, data]: [string, any]) => ({
-            name,
-            result: data.result || 'unknown',
-            category: data.category || 'undetected'
-          }))
-          .sort((a, b) => {
-            const priority = {
-              'malicious': 3,
-              'suspicious': 2,
-              'harmless': 1, 
-              'undetected': 0
-            };
-            return (priority[b.category] || -1) - (priority[a.category] || -1);
-          });
-
-        setScanResult({
-          status: attributes.status,
-          total: attributes.stats.total || 0,
-          malicious: attributes.stats.malicious || 0,
-          suspicious: attributes.stats.suspicious || 0,
-          harmless: attributes.stats.harmless || 0,
-          undetected: attributes.stats.undetected || 0,
-          vendorResults
-        });
-      } else {
-        throw new Error('Análise não foi concluída no tempo esperado');
-      }
-    } catch (error) {
-      console.error('Erro na análise:', error);
-      Alert.alert('Erro', error.message || 'Ocorreu um erro ao analisar o arquivo');
-    } finally {
+      setScanResult(mockResult);
       setScanning(false);
-    }
+    }, 3000);
   };
 
   // Renderização da interface

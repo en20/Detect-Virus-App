@@ -55,43 +55,49 @@ export default function IPPage() {
     setSearching(true);
     setIpResult(null);
 
-    try {
-      const response = await fetch(`https://www.virustotal.com/api/v3/ip_addresses/${ipAddress}`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'x-apikey': 'ed18940bf2a5627ab6488436e4b69e7d81105219f3a61ef38db67632da7c5408'
+    // Simulate API delay
+    setTimeout(() => {
+      // Mock result data
+      const mockResult: IPResult = {
+        id: ipAddress,
+        country: "Estados Unidos",
+        continent: "América do Norte",
+        asn: 15169,
+        as_owner: "Google LLC",
+        network: "8.8.8.0/24",
+        regional_internet_registry: "ARIN",
+        last_analysis_stats: {
+          malicious: 0,
+          suspicious: 0,
+          undetected: 5,
+          harmless: 67,
+          timeout: 0
+        },
+        last_analysis_results: {
+          "Engine1": {
+            method: "blacklist",
+            engine_name: "Engine 1",
+            category: "harmless",
+            result: "clean"
+          },
+          "Engine2": {
+            method: "blacklist",
+            engine_name: "Engine 2",
+            category: "harmless",
+            result: "clean"
+          },
+          "Engine3": {
+            method: "blacklist",
+            engine_name: "Engine 3",
+            category: "undetected",
+            result: "unrated"
+          }
         }
-      });
+      };
 
-      if (!response.ok) {
-        throw new Error(`Erro na requisição: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('IP Lookup Response:', JSON.stringify(data, null, 2));
-      
-      if (data.data?.attributes) {
-        setIpResult({
-          id: data.data.id,
-          country: data.data.attributes.country || 'Desconhecido',
-          continent: data.data.attributes.continent || 'Desconhecido',
-          asn: data.data.attributes.asn || 0,
-          as_owner: data.data.attributes.as_owner || 'Desconhecido',
-          network: data.data.attributes.network || 'Desconhecido',
-          regional_internet_registry: data.data.attributes.regional_internet_registry || 'Desconhecido',
-          last_analysis_stats: data.data.attributes.last_analysis_stats,
-          last_analysis_results: data.data.attributes.last_analysis_results
-        });
-      } else {
-        throw new Error('Dados incompletos ou inválidos');
-      }
-    } catch (error) {
-      console.error('IP Lookup error:', error);
-      Alert.alert('Erro', 'Falha ao analisar o endereço IP. Tente novamente mais tarde.');
-    } finally {
+      setIpResult(mockResult);
       setSearching(false);
-    }
+    }, 1500);
   };
 
   // Lista de IPs populares para teste
