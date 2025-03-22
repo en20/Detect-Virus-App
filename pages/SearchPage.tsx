@@ -4,7 +4,7 @@ import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MotiView } from 'moti';
-import Header from '../components/Header';
+
 
 interface IPResult {
   id: string;

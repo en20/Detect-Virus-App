@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MotiView } from 'moti';
 import * as DocumentPicker from 'expo-document-picker';
-import Header from '../components/Header';
+
 
 // Interface para o arquivo selecionado
 interface SelectedFile {
@@ -59,7 +59,7 @@ export default function FilePage() {
         uri: file.uri,
         name: file.name,
         type: file.mimeType || 'application/octet-stream',
-        size: file.size
+        size: file.size ?? 0
       });
       
       // Limpar resultado anterior se houver
